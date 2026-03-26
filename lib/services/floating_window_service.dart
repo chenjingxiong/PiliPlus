@@ -31,7 +31,6 @@ class FloatingWindowService extends GetxService {
 
     // 获取当前视频URL - PlayUrlModel 的 dash 字段直接包含视频信息
     final videoUrl = videoController.data?.dash?.video?.first?.baseUrl ??
-                      videoController.data?.dash?.video?.first?.base_url ??
                       videoController.data?.durl?.first?.url;
 
     if (videoUrl == null) {

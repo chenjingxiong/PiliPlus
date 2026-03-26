@@ -1,6 +1,6 @@
 import 'package:desktop_multi_window/desktop_multi_window.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
 import 'package:window_manager/window_manager.dart';
@@ -25,6 +25,9 @@ class _FloatingPlayerWindowState extends State<FloatingPlayerWindow>
   WindowArguments? _arguments;
   bool _isInitialized = false;
 
+  // 本地音量状态（因为 player.stream.volume 在此版本不可用）
+  double _currentVolume = 1.0;
+
   @override
   void initState() {
     super.initState();
@@ -45,11 +48,16 @@ class _FloatingPlayerWindowState extends State<FloatingPlayerWindow>
       final args = _arguments as FloatingPlayerWindowArguments;
 
       // 初始化播放器
-      _player = Player();
-      _videoController = VideoController(
+      _player = await Player.create(
+        configuration: const PlayerConfiguration(
+          logLevel: kDebugMode ? LogLevel.warning : LogLevel.error,
+        ),
+      );
+
+      _videoController = await VideoController.create(
         _player!,
-        configuration: VideoControllerConfiguration(
-          controls: NoVideoControls,
+        configuration: const VideoControllerConfiguration(
+          enableHardwareAcceleration: true,
         ),
       );
 
@@ -131,7 +139,10 @@ class _FloatingPlayerWindowState extends State<FloatingPlayerWindow>
       case 'setVolume':
         final volume = call.arguments as double?;
         if (volume != null) {
-          await _player!.setVolume(volume);
+          setState(() {
+            _currentVolume = volume;
+          });
+          await _player!.setVolume(volume * 100);
         }
         return 'OK';
 
@@ -308,19 +319,17 @@ class _FloatingPlayerWindowState extends State<FloatingPlayerWindow>
           const SizedBox(width: 8),
 
           // 音量控制
-          StreamBuilder<double>(
-            stream: _player!.stream.volume,
-            builder: (context, snapshot) {
-              final volume = snapshot.data ?? 1.0;
-              return IconButton(
-                icon: Icon(
-                  volume == 0 ? Icons.volume_off : Icons.volume_up,
-                  color: Colors.white,
-                ),
-                onPressed: () {
-                  _player!.setVolume(volume == 0 ? 1.0 : 0.0);
-                },
-              );
+          IconButton(
+            icon: Icon(
+              _currentVolume == 0 ? Icons.volume_off : Icons.volume_up,
+              color: Colors.white,
+            ),
+            onPressed: () {
+              final newVolume = _currentVolume == 0 ? 1.0 : 0.0;
+              setState(() {
+                _currentVolume = newVolume;
+              });
+              _player!.setVolume(newVolume * 100);
             },
           ),
         ],

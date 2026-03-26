@@ -38,7 +38,6 @@ class FloatingPlayerManager {
           ...?extraArgs,
         });
         await _windowController!.show();
-        await _windowController!.focus();
         return;
       } catch (e) {
         // 如果通信失败，重新创建窗口

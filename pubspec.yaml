@@ -228,7 +228,7 @@ dependencies:
   dlna_dart: ^0.1.0
   battery_plus: ^7.0.0
   material_new_shapes: ^1.0.0
-  desktop_multi_window: ^0.2.0
+  desktop_multi_window: ^0.3.0
 
   vector_math: any
   fixnum: any

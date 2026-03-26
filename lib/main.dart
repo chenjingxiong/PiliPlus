@@ -163,7 +163,7 @@ void main() async {
         );
         DisplayMode? displayMode;
         if (storageDisplay != null) {
-          displayDisplay = mode.firstWhereOrNull(
+          displayMode = mode.firstWhereOrNull(
             (e) => e.toString() == storageDisplay,
           );
         }
