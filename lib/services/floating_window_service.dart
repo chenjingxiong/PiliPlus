@@ -3,6 +3,7 @@ import 'package:PiliPlus/pages/video/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 
 /// 独立窗口播放服务
@@ -28,12 +29,13 @@ class FloatingWindowService extends GetxService {
     _mainPlayerController = playerController;
     _videoController = videoController;
 
-    // 获取当前视频URL
-    final videoUrl = videoController.data?.playData?.dash?.video?.first?.baseUrl ??
-                      videoController.data?.playData?.dash?.video?.first?.base_url;
+    // 获取当前视频URL - PlayUrlModel 的 dash 字段直接包含视频信息
+    final videoUrl = videoController.data?.dash?.video?.first?.baseUrl ??
+                      videoController.data?.dash?.video?.first?.base_url ??
+                      videoController.data?.durl?.first?.url;
 
     if (videoUrl == null) {
-      Get.snackbar('提示', '无法获取视频地址');
+      SmartDialog.showToast('无法获取视频地址');
       return;
     }
 
@@ -42,18 +44,14 @@ class FloatingWindowService extends GetxService {
     await playerController.pause();
 
     // 启动浮动播放器窗口
-    final windowId = await FloatingPlayerManager.start(
+    await FloatingPlayerManager.start(
       videoUrl: videoUrl,
-      title: videoController.data?.title ?? '',
+      title: '视频播放',
       extraArgs: {
         'autoplay': wasPlaying,
-        'position': playerController.position.value.inMilliseconds,
+        'position': playerController.position.inMilliseconds,
       },
     );
-
-    if (windowId != null) {
-      isInFloatingWindow.value = true;
-    }
   }
 
   /// 关闭独立窗口并返回主窗口
