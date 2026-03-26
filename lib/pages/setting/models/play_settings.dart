@@ -270,6 +270,19 @@ List<SettingsModel> get playSettings => [
     setKey: SettingBoxKey.tempPlayerConf,
     defaultVal: false,
   ),
+  if (PlatformUtils.isDesktop)
+    SwitchModel(
+      title: '独立窗口播放',
+      subtitle: '播放时使用独立窗口，主窗口可继续浏览',
+      leading: const Icon(Icons.open_in_new_outlined),
+      setKey: SettingBoxKey.enableFloatingWindow,
+      defaultVal: false,
+      onChanged: (value) {
+        if (value) {
+          SmartDialog.showToast('下次播放时生效');
+        }
+      },
+    ),
 ];
 
 Future<void> _showSubtitleDialog(

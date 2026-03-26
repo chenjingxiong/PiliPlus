@@ -39,6 +39,7 @@ import 'package:PiliPlus/plugin/pl_player/utils/fullscreen.dart';
 import 'package:PiliPlus/services/service_locator.dart';
 import 'package:PiliPlus/services/shutdown_timer_service.dart'
     show shutdownTimerService;
+import 'package:PiliPlus/services/floating_window_service.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/accounts/account.dart';
 import 'package:PiliPlus/utils/extension/iterable_ext.dart';
@@ -1820,6 +1821,32 @@ class HeaderControlState extends State<HeaderControl>
                               Icons.push_pin_outlined,
                               color: Colors.white,
                             ),
+                    ),
+                  );
+                }),
+              if (PlatformUtils.isDesktop && !plPlayerController.isDesktopPip)
+                Obx(() {
+                  final isInFloatingWindow =
+                      FloatingWindowService.to.isInFloatingWindow.value;
+                  return SizedBox(
+                    width: btnWidth,
+                    height: btnHeight,
+                    child: IconButton(
+                      style: btnStyle,
+                      tooltip: isInFloatingWindow ? '返回主窗口' : '独立窗口',
+                      onPressed: () async {
+                        await FloatingWindowService.to.toggleFloatingWindow(
+                          playerController: plPlayerController,
+                          videoController: videoDetailCtr,
+                        );
+                      },
+                      icon: Icon(
+                        isInFloatingWindow
+                            ? Icons.fullscreen_exit
+                            : Icons.open_in_new,
+                        size: 19,
+                        color: Colors.white,
+                      ),
                     ),
                   );
                 }),

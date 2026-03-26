@@ -966,4 +966,18 @@ abstract final class Pref {
 
   static bool get saveReply =>
       _setting.get(SettingBoxKey.saveReply, defaultValue: true);
+
+  static bool get enableFloatingWindow =>
+      _setting.get(SettingBoxKey.enableFloatingWindow, defaultValue: false);
+
+  static Size get floatingWindowSize {
+    final List<double>? size = (_setting.get(SettingBoxKey.floatingWindowSize) as List?)
+        ?.fromCast<double>();
+    return size == null ? const Size(640.0, 400.0) : Size(size[0], size[1]);
+  }
+
+  static set floatingWindowSize(Size size) => _setting.put(
+    SettingBoxKey.floatingWindowSize,
+    [size.width, size.height],
+  );
 }
