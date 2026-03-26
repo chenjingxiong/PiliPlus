@@ -1,33 +1,75 @@
+import 'package:PiliPlus/pages/floating_player/view.dart';
 import 'package:PiliPlus/pages/video/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
-import 'package:PiliPlus/utils/storage_pref.dart';
+import 'package:PiliPlus/utils/platform_utils.dart';
+import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 
 /// 独立窗口播放服务
 ///
-/// 使用现有的桌面 PiP 功能实现浮动播放
+/// 使用多窗口实现真正的独立播放器进程
 class FloatingWindowService extends GetxService {
   static FloatingWindowService get to => Get.find();
 
   // 是否处于独立窗口模式
   final RxBool isInFloatingWindow = false.obs;
 
-  /// 显示独立窗口（进入桌面 PiP 模式）
+  // 当前播放的控制器（主窗口）
+  PlPlayerController? _mainPlayerController;
+  VideoDetailController? _videoController;
+
+  /// 显示独立窗口
   Future<void> showFloatingWindow({
     required PlPlayerController playerController,
     required VideoDetailController videoController,
   }) async {
-    if (!Pref.enableFloatingWindow) {
+    if (!PlatformUtils.isDesktop) return;
+
+    _mainPlayerController = playerController;
+    _videoController = videoController;
+
+    // 获取当前视频URL
+    final videoUrl = videoController.data?.playData?.dash?.video?.first?.baseUrl ??
+                      videoController.data?.playData?.dash?.video?.first?.base_url;
+
+    if (videoUrl == null) {
+      Get.snackbar('提示', '无法获取视频地址');
       return;
     }
-    await playerController.enterDesktopPip();
-    isInFloatingWindow.value = playerController.isDesktopPip;
+
+    // 暂停主窗口播放
+    final wasPlaying = playerController.playerStatus.value.isPlaying;
+    await playerController.pause();
+
+    // 启动浮动播放器窗口
+    final window = await FloatingPlayerWindow.start(
+      videoUrl: videoUrl,
+      extraArgs: {
+        'title': videoController.data?.title ?? '',
+        'cover': videoController.cover.value,
+        // 传递播放进度
+        if (wasPlaying) 'autoplay': true,
+        'position': playerController.position.value.inMilliseconds,
+      },
+    );
+
+    if (window != null) {
+      isInFloatingWindow.value = true;
+    }
   }
 
-  /// 关闭独立窗口（退出桌面 PiP 模式）
+  /// 关闭独立窗口并返回主窗口
   Future<void> closeFloatingWindow() async {
-    // 需要获取当前的 playerController，这里简化处理
+    await FloatingPlayerWindow.close();
     isInFloatingWindow.value = false;
+
+    // 恢复主窗口播放
+    if (_mainPlayerController != null) {
+      await _mainPlayerController!.play();
+    }
+
+    _mainPlayerController = null;
+    _videoController = null;
   }
 
   /// 切换独立窗口模式
@@ -35,14 +77,18 @@ class FloatingWindowService extends GetxService {
     required PlPlayerController playerController,
     required VideoDetailController videoController,
   }) async {
-    if (playerController.isDesktopPip) {
-      await playerController.exitDesktopPip();
-      isInFloatingWindow.value = false;
+    if (isInFloatingWindow.value) {
+      await closeFloatingWindow();
     } else {
-      if (Pref.enableFloatingWindow) {
-        await playerController.enterDesktopPip();
-        isInFloatingWindow.value = playerController.isDesktopPip;
-      }
+      await showFloatingWindow(
+        playerController: playerController,
+        videoController: videoController,
+      );
     }
+  }
+
+  /// 发送控制消息到浮动窗口
+  Future<void> sendCommand(String command, {Map<String, dynamic>? args}) async {
+    await FloatingPlayerWindow.sendMessage(command, args);
   }
 }

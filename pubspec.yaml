@@ -228,6 +228,10 @@ dependencies:
   dlna_dart: ^0.1.0
   battery_plus: ^7.0.0
   material_new_shapes: ^1.0.0
+  multi_window:
+    git:
+      url: https://github.com/MixinNetwork/flutter-multi-window.git
+      ref: main
 
   vector_math: any
   fixnum: any
