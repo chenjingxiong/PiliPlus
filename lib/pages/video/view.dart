@@ -2179,13 +2179,16 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
       return;
     }
 
-    // 桌面端：如果启用了浮动窗口且正在播放，进入 PiP 模式而不是返回
+    // 桌面端：如果启用了浮动窗口且正在播放，打开独立窗口而不是返回
     if (PlatformUtils.isDesktop &&
         !didPop &&
         Pref.enableFloatingWindow &&
         plPlayerController != null &&
         plPlayerController!.playerStatus.value.isPlaying) {
-      plPlayerController!.enterDesktopPip();
+      FloatingWindowService.to.showFloatingWindow(
+        playerController: plPlayerController!,
+        videoController: videoDetailController,
+      );
       return;
     }
 

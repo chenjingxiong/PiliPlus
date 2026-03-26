@@ -42,25 +42,23 @@ class FloatingWindowService extends GetxService {
     await playerController.pause();
 
     // 启动浮动播放器窗口
-    final window = await FloatingPlayerWindow.start(
+    final windowId = await FloatingPlayerManager.start(
       videoUrl: videoUrl,
+      title: videoController.data?.title ?? '',
       extraArgs: {
-        'title': videoController.data?.title ?? '',
-        'cover': videoController.cover.value,
-        // 传递播放进度
-        if (wasPlaying) 'autoplay': true,
+        'autoplay': wasPlaying,
         'position': playerController.position.value.inMilliseconds,
       },
     );
 
-    if (window != null) {
+    if (windowId != null) {
       isInFloatingWindow.value = true;
     }
   }
 
   /// 关闭独立窗口并返回主窗口
   Future<void> closeFloatingWindow() async {
-    await FloatingPlayerWindow.close();
+    await FloatingPlayerManager.close();
     isInFloatingWindow.value = false;
 
     // 恢复主窗口播放
@@ -77,7 +75,7 @@ class FloatingWindowService extends GetxService {
     required PlPlayerController playerController,
     required VideoDetailController videoController,
   }) async {
-    if (isInFloatingWindow.value) {
+    if (FloatingPlayerManager.isActive) {
       await closeFloatingWindow();
     } else {
       await showFloatingWindow(
@@ -89,6 +87,6 @@ class FloatingWindowService extends GetxService {
 
   /// 发送控制消息到浮动窗口
   Future<void> sendCommand(String command, {Map<String, dynamic>? args}) async {
-    await FloatingPlayerWindow.sendMessage(command, args);
+    await FloatingPlayerManager.sendMessage(command, args);
   }
 }

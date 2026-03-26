@@ -14,6 +14,8 @@ import 'package:PiliPlus/services/account_service.dart';
 import 'package:PiliPlus/services/download/download_service.dart';
 import 'package:PiliPlus/services/floating_window_service.dart';
 import 'package:PiliPlus/services/service_locator.dart';
+import 'package:PiliPlus/pages/floating_player/view.dart';
+import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:PiliPlus/utils/cache_manager.dart';
 import 'package:PiliPlus/utils/calc_window_position.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
@@ -127,6 +129,11 @@ void main() async {
     }
   } else if (Platform.isMacOS) {
     await setupServiceLocator();
+  }
+
+  // 初始化多窗口支持（桌面端）
+  if (PlatformUtils.isDesktop) {
+    await FloatingPlayerManager.init();
   }
 
   Request();
