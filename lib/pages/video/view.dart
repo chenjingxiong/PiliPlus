@@ -61,6 +61,7 @@ import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
+import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:auto_orientation/auto_orientation.dart';
 import 'package:extended_nested_scroll_view/extended_nested_scroll_view.dart';
 import 'package:floating/floating.dart';
@@ -2177,6 +2178,17 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
     if (plPlayerController?.onPopInvokedWithResult(didPop, result) ?? false) {
       return;
     }
+
+    // 桌面端：如果启用了浮动窗口且正在播放，进入 PiP 模式而不是返回
+    if (PlatformUtils.isDesktop &&
+        !didPop &&
+        Pref.enableFloatingWindow &&
+        plPlayerController != null &&
+        plPlayerController!.playerStatus.value.isPlaying) {
+      plPlayerController!.enterDesktopPip();
+      return;
+    }
+
     if (PlatformUtils.isMobile &&
         !videoDetailController.horizontalScreen &&
         !isPortrait) {
