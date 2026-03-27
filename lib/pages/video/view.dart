@@ -2325,12 +2325,11 @@ class _OwnerVideoPanelState extends State<OwnerVideoPanel> {
                                 onTap: () {
                                   // 点击视频时切换到该视频，不返回主页
                                   widget.ugcIntroController.onChangeEpisode(
-                                    ugc.Episode(
+                                    ugc.BaseEpisodeItem(
                                       bvid: videoItem.bvid,
-                                      cid: videoItem.cid!,
-                                      part: videoItem.param?.toInt(),
+                                      cid: videoItem.cid,
+                                      cover: videoItem.cover,
                                     ),
-                                    true,
                                   );
                                 },
                               ),
