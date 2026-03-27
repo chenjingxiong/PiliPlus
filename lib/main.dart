@@ -15,9 +15,6 @@ import 'package:PiliPlus/services/download/download_service.dart';
 import 'package:PiliPlus/services/floating_window_service.dart';
 import 'package:PiliPlus/services/service_locator.dart';
 import 'package:PiliPlus/pages/floating_player/view.dart';
-import 'package:PiliPlus/pages/floating_player/floating_player_window.dart';
-import 'package:PiliPlus/pages/floating_player/arguments.dart';
-import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:PiliPlus/utils/cache_manager.dart';
 import 'package:PiliPlus/utils/calc_window_position.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
@@ -173,42 +170,8 @@ void main() async {
   } else if (PlatformUtils.isDesktop) {
     await windowManager.ensureInitialized();
 
-    // 检查是否在子窗口中运行
-    if (PlatformUtils.isDesktop) {
-      try {
-        final windowController = await WindowController.fromCurrentEngine();
-        final windowArgs = WindowArguments.fromArguments(windowController.arguments);
-
-        // 如果是浮动播放器窗口，直接运行浮动播放器
-        if (windowArgs is FloatingPlayerWindowArguments) {
-          // 设置窗口选项
-          final windowOptions = WindowOptions(
-            size: const Size(800, 600),
-            center: true,
-            backgroundColor: Colors.transparent,
-            skipTaskbar: false,
-            titleBarStyle: TitleBarStyle.hidden,
-            windowButtonVisibility: false,
-          );
-          await windowManager.waitUntilReadyToShow(windowOptions, () async {
-            await windowManager.show();
-            await windowManager.focus();
-          });
-
-          if (Pref.dynamicColor) {
-            await MyApp.initPlatformState();
-          }
-
-          runApp(const FloatingPlayerWindow());
-          return;
-        }
-      } catch (e) {
-        // 主窗口或出错，继续正常流程
-        if (kDebugMode) {
-          debugPrint('Not in child window or failed to get window info: $e');
-        }
-      }
-    }
+    // TODO: 实现多窗口功能 - 等待 desktop_multi_window 正确 API 文档
+    // 当前为单窗口模式
 
     final windowOptions = WindowOptions(
       minimumSize: const Size(400, 720),
