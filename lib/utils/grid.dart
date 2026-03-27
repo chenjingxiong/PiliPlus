@@ -24,7 +24,7 @@ abstract final class Grid {
     double minHeight = 90,
   }) => SliverGridDelegateWithExtentAndRatio(
     mainAxisSpacing: 2,
-    maxCrossAxisExtent: Grid.smallCardWidth * 2,
+    maxCrossAxisExtent: Pref.recommendCardWidth,
     childAspectRatio: Style.aspectRatio * 2.2,
     minHeight: MediaQuery.textScalerOf(context).scale(minHeight),
   );

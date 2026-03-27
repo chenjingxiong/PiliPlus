@@ -11,7 +11,7 @@ import 'package:waterfall_flow/waterfall_flow.dart'
 mixin DynMixin {
   late final dynGridDelegate =
       SliverWaterfallFlowDelegateWithMaxCrossAxisExtent(
-        maxCrossAxisExtent: Grid.smallCardWidth * 2,
+        maxCrossAxisExtent: Pref.recommendCardWidth,
         crossAxisSpacing: 4,
       );
 
@@ -22,7 +22,7 @@ mixin DynMixin {
     return SliverLayoutBuilder(
       builder: (context, constraints) {
         final maxWidth = constraints.crossAxisExtent;
-        final cardWidth = Grid.smallCardWidth * 2;
+        final cardWidth = Pref.recommendCardWidth;
         final flag = cardWidth < maxWidth;
         return SliverPadding(
           padding: EdgeInsets.symmetric(
@@ -37,7 +37,7 @@ mixin DynMixin {
   late final skeDelegate = SliverGridDelegateWithExtentAndRatio(
     crossAxisSpacing: 4,
     mainAxisSpacing: 4,
-    maxCrossAxisExtent: Grid.smallCardWidth * 2,
+    maxCrossAxisExtent: Pref.recommendCardWidth,
     childAspectRatio: Style.aspectRatio,
     mainAxisExtent: 50,
   );
