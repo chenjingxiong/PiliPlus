@@ -2010,7 +2010,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
       return const SizedBox.shrink();
     }
     return KeepAliveWrapper(
-      child: HorizontalMemberPage(
+      child: OwnerVideoPanel(
         mid: mid,
         videoDetailController: videoDetailController,
         ugcIntroController: ugcIntroController,
@@ -2235,6 +2235,121 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
       verticalScreenForTwoSeconds();
     }
   }
+
+/// 作者视频列表面板 - 用于在 tab 中显示
+/// 点击视频时会切换到该视频，不会返回主页
+class OwnerVideoPanel extends StatefulWidget {
+  const OwnerVideoPanel({
+    super.key,
+    required this.mid,
+    required this.videoDetailController,
+    required this.ugcIntroController,
+  });
+
+  final dynamic mid;
+  final VideoDetailController videoDetailController;
+  final UgcIntroController ugcIntroController;
+
+  @override
+  State<OwnerVideoPanel> createState() => _OwnerVideoPanelState();
+}
+
+class _OwnerVideoPanelState extends State<OwnerVideoPanel> {
+  late final HorizontalMemberPageController _controller;
+  late final String _bvid;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = Get.put(
+      HorizontalMemberPageController(
+        mid: widget.mid,
+        currAid: widget.videoDetailController.aid.toString(),
+      ),
+      tag: '${widget.videoDetailController.heroTag}_owner_panel',
+    );
+    _bvid = widget.videoDetailController.bvid;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Obx(
+      () => _buildVideoList(_controller.loadingState.value),
+    );
+  }
+
+  Widget _buildVideoList(LoadingState<List<dynamic>> loadingState) {
+    return switch (loadingState) {
+      Loading() => const SliverToBoxAdapter(
+        child: Center(child: CircularProgressIndicator()),
+      ),
+      Success(:final response) =>
+        response != null && response.isNotEmpty
+            ? CustomScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                controller: _controller.scrollController,
+                slivers: [
+                  SliverMainAxisGroup(
+                    slivers: [
+                      SliverPadding(
+                        padding: const EdgeInsets.only(bottom: 100),
+                        sliver: SliverFixedExtentList.builder(
+                          itemBuilder: (context, index) {
+                            if (index == response.length - 1 && _controller.hasNext) {
+                              _controller.onLoadMore();
+                            }
+                            final videoItem = response[index];
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 2),
+                              child: VideoCardHMemberVideo(
+                                videoItem: videoItem,
+                                bvid: _bvid,
+                                onTap: () {
+                                  // 点击视频时切换到该视频，不返回主页
+                                  widget.ugcIntroController.onChangeEpisode(
+                                    ugc.Episode(
+                                      bvid: videoItem.bvid,
+                                      cid: videoItem.cid!,
+                                      part: videoItem.param?.toInt(),
+                                    ),
+                                    true,
+                                  );
+                                },
+                              ),
+                            );
+                          },
+                          itemExtent: 100,
+                          itemCount: response.length,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              )
+            : const SliverToBoxAdapter(
+              child: Center(child: Text('暂无视频')),
+            ),
+      Error(:final errMsg) => SliverToBoxAdapter(
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('加载失败: $errMsg'),
+              const SizedBox(height: 16),
+              TextButton(
+                onPressed: () {
+                  _controller.loadingState.value = LoadingState.loading();
+                  _controller.getUserInfo();
+                },
+                child: const Text('重试'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    };
+  }
+}
 
   void onShowMemberPage(int? mid) {
     videoDetailController.childKey.currentState?.showBottomSheet(
