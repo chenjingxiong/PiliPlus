@@ -133,6 +133,19 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
             ((videoDetail.pages?.length ?? 0) > 1));
   }
 
+  bool get _shouldShowOwnerPanel {
+    if (videoDetailController.isFileSource ||
+        isPortrait ||
+        !videoDetailController.isUgc) {
+      return false;
+    }
+    late final videoDetail = ugcIntroController.videoDetail.value;
+    // 显示Up主tab的条件：有owner信息且不是禁止显示UP主信息
+    return videoDetail.owner != null &&
+        videoDetail.owner?.mid != null &&
+        !videoDetail.disableShowUpInfo;
+  }
+
   final videoReplyPanelKey = GlobalKey();
   final videoRelatedKey = GlobalKey();
   final videoIntroKey = GlobalKey();
@@ -864,6 +877,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
                         if (videoDetailController.showReply)
                           videoReplyPanel(isNested: true),
                         if (_shouldShowSeasonPanel) seasonPanel,
+                        if (_shouldShowOwnerPanel) ownerPanel,
                       ],
                     ),
                   ),
@@ -931,6 +945,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
                         ),
                         if (videoDetailController.showReply) videoReplyPanel(),
                         if (_shouldShowSeasonPanel) seasonPanel,
+                        if (_shouldShowOwnerPanel) ownerPanel,
                       ],
                     ),
                   ),
@@ -996,6 +1011,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
                           if (videoDetailController.showReply)
                             videoReplyPanel(),
                           if (_shouldShowSeasonPanel) seasonPanel,
+                          if (_shouldShowOwnerPanel) ownerPanel,
                         ],
                       ),
                     ),
@@ -1091,6 +1107,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
                           ),
                         if (videoDetailController.showReply) videoReplyPanel(),
                         if (_shouldShowSeasonPanel) seasonPanel,
+                        if (_shouldShowOwnerPanel) ownerPanel,
                       ],
                     ),
                   ),
@@ -1166,6 +1183,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
                                 double flex = 1;
                                 if (videoDetailController.showReply) flex++;
                                 if (shouldShowSeasonPanel) flex++;
+                                if (_shouldShowOwnerPanel) flex++;
                                 return maxWidth / flex;
                               }(),
                               height: bottomHeight,
@@ -1175,6 +1193,8 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
                             Expanded(child: videoReplyPanel()),
                           if (shouldShowSeasonPanel)
                             Expanded(child: seasonPanel),
+                          if (_shouldShowOwnerPanel)
+                            Expanded(child: ownerPanel),
                         ],
                       ),
                     ),
@@ -1431,6 +1451,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
         videoDetailController.isFileSource ? '离线视频' : introText ?? '简介',
       if (videoDetailController.showReply) '评论',
       if (_shouldShowSeasonPanel) '播放列表',
+      if (_shouldShowOwnerPanel) 'Up主',
     ];
     if (videoDetailController.tabCtr.length != tabs.length) {
       videoDetailController.tabCtr.dispose();
@@ -1507,7 +1528,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
               const Spacer()
             else
               Flexible(
-                flex: tabs.length == 3 ? 2 : 1,
+                flex: tabs.length >= 3 ? 2 : 1,
                 child: tabBar(),
               ),
             Flexible(
@@ -1978,6 +1999,21 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
             ),
           ],
         ],
+      ),
+    );
+  }
+
+  Widget get ownerPanel {
+    final videoDetail = ugcIntroController.videoDetail.value;
+    final mid = videoDetail.owner?.mid;
+    if (mid == null) {
+      return const SizedBox.shrink();
+    }
+    return KeepAliveWrapper(
+      child: HorizontalMemberPage(
+        mid: mid,
+        videoDetailController: videoDetailController,
+        ugcIntroController: ugcIntroController,
       ),
     );
   }
