@@ -168,11 +168,24 @@ class _HomePageState extends CommonPageState<HomePage>
                 const SizedBox(width: 10),
                 Expanded(
                   child: Obx(
-                    () => Text(
-                      _homeController.defaultSearch.value,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(color: theme.colorScheme.outline),
+                    () => Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            _homeController.defaultSearch.value,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(color: theme.colorScheme.outline),
+                          ),
+                        ),
+                        Text(
+                          ' CTRL+F',
+                          style: TextStyle(
+                            color: theme.colorScheme.outline.withOpacity(0.5),
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),

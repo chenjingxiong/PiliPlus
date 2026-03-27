@@ -10,6 +10,7 @@ import 'package:PiliPlus/common/widgets/route_aware_mixin.dart';
 import 'package:PiliPlus/models/common/nav_bar_config.dart';
 import 'package:PiliPlus/pages/home/view.dart';
 import 'package:PiliPlus/pages/main/controller.dart';
+import 'package:PiliPlus/pages/search/widgets/quick_search_dialog.dart';
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_status.dart';
 import 'package:PiliPlus/utils/app_scheme.dart';
@@ -405,6 +406,24 @@ class _MainAppState extends PopScopeState<MainApp>
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     Widget child;
+
+    // 快捷键监听 - CTRL+F 打开快捷搜索
+    Widget buildWithHotKey(Widget child) {
+      return Focus(
+        onKeyEvent: (node, event) {
+          // 检测 CTRL+F 或 CMD+F (Mac)
+          if (event is KeyDownEvent &&
+              event.logicalKey == LogicalKeyboardKey.keyF &&
+              (HardwareKeyboard.instance.isControlPressed ||
+                  HardwareKeyboard.instance.isMetaPressed)) {
+            QuickSearchDialog.show();
+            return KeyEventResult.handled;
+          }
+          return KeyEventResult.ignored;
+        },
+        child: child,
+      );
+    }
     if (_mainController.mainTabBarView) {
       child = CustomTabBarView(
         scrollDirection: _mainController.useBottomNav ? .horizontal : .vertical,
@@ -462,7 +481,7 @@ class _MainAppState extends PopScopeState<MainApp>
       );
     }
 
-    return child;
+    return buildWithHotKey(child);
   }
 
   Widget _buildIcon({required NavigationBarType type, bool selected = false}) {
