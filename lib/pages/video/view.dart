@@ -15,6 +15,7 @@ import 'package:PiliPlus/common/widgets/sliver/sliver_pinned_dynamic_header.dart
 import 'package:PiliPlus/main.dart';
 import 'package:PiliPlus/models/common/episode_panel_type.dart';
 import 'package:PiliPlus/models_new/pgc/pgc_info_model/result.dart';
+import 'package:PiliPlus/models_new/space/space_archive/item.dart';
 import 'package:PiliPlus/models_new/video/video_detail/episode.dart' as ugc;
 import 'package:PiliPlus/models_new/video/video_detail/page.dart';
 import 'package:PiliPlus/models_new/video/video_detail/ugc_season.dart';
@@ -34,6 +35,7 @@ import 'package:PiliPlus/pages/video/introduction/ugc/view.dart';
 import 'package:PiliPlus/pages/video/introduction/ugc/widgets/page.dart';
 import 'package:PiliPlus/pages/video/introduction/ugc/widgets/season.dart';
 import 'package:PiliPlus/pages/video/member/controller.dart';
+import 'package:PiliPlus/pages/member_video/widgets/video_card_h_member_video.dart';
 import 'package:PiliPlus/pages/video/member/view.dart';
 import 'package:PiliPlus/pages/video/related/view.dart';
 import 'package:PiliPlus/pages/video/reply/controller.dart';
@@ -60,6 +62,7 @@ import 'package:PiliPlus/utils/mobile_observer.dart';
 import 'package:PiliPlus/utils/num_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
+import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
@@ -2236,6 +2239,21 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
     }
   }
 
+  void onShowMemberPage(int? mid) {
+    videoDetailController.childKey.currentState?.showBottomSheet(
+      shape: const RoundedRectangleBorder(),
+      constraints: const BoxConstraints(),
+      (context) {
+        return HorizontalMemberPage(
+          mid: mid,
+          videoDetailController: videoDetailController,
+          ugcIntroController: ugcIntroController,
+        );
+      },
+    );
+  }
+}
+
 /// 作者视频列表面板 - 用于在 tab 中显示
 /// 点击视频时会切换到该视频，不会返回主页
 class OwnerVideoPanel extends StatefulWidget {
@@ -2278,7 +2296,7 @@ class _OwnerVideoPanelState extends State<OwnerVideoPanel> {
     );
   }
 
-  Widget _buildVideoList(LoadingState<List<dynamic>> loadingState) {
+  Widget _buildVideoList(LoadingState<List<SpaceArchiveItem>?> loadingState) {
     return switch (loadingState) {
       Loading() => const SliverToBoxAdapter(
         child: Center(child: CircularProgressIndicator()),
@@ -2348,20 +2366,5 @@ class _OwnerVideoPanelState extends State<OwnerVideoPanel> {
         ),
       ),
     };
-  }
-}
-
-  void onShowMemberPage(int? mid) {
-    videoDetailController.childKey.currentState?.showBottomSheet(
-      shape: const RoundedRectangleBorder(),
-      constraints: const BoxConstraints(),
-      (context) {
-        return HorizontalMemberPage(
-          mid: mid,
-          videoDetailController: videoDetailController,
-          ugcIntroController: ugcIntroController,
-        );
-      },
-    );
   }
 }
