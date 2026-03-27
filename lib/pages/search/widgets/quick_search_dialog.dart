@@ -3,10 +3,10 @@ import 'package:PiliPlus/models/search/suggest.dart';
 import 'package:PiliPlus/pages/search/widgets/quick_search_controller.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
-import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
 /// 快捷搜索对话框
 /// 使用 CTRL+F 快捷键触发的悬浮搜索窗口
@@ -23,12 +23,6 @@ class QuickSearchDialog extends StatelessWidget {
       tag: 'quickSearch',
       alignment: Alignment.topCenter,
       animationType: SmartAnimationType.centerFade_otherSlide,
-      animationBuilder: (controller, child, animationParam) {
-        return FadeTransition(
-          opacity: animationParam.curveAnim,
-          child: child,
-        );
-      },
       maskColor: Colors.black.withValues(alpha: 0.3),
       builder: (context) => const QuickSearchDialog(),
       onDismiss: () {
@@ -211,27 +205,12 @@ class QuickSearchDialog extends StatelessWidget {
   ) {
     return ListTile(
       dense: true,
-      leading: _buildSuggestionIcon(item),
+      leading: const Icon(Icons.search, size: 18),
       title: Text(
-        item.value ?? '',
+        item.term ?? '',
         style: const TextStyle(fontSize: 14),
       ),
-      onTap: () => controller.onClickSuggestion(item.value ?? ''),
+      onTap: () => controller.onClickSuggestion(item.term ?? ''),
     );
-  }
-
-  Widget? _buildSuggestionIcon(SearchSuggestItem item) {
-    switch (item.type) {
-      case 0: // 视频
-        return const Icon(Icons.video_library, size: 18);
-      case 1: // 番剧
-        return const Icon(Icons.movie, size: 18);
-      case 2: // UP主
-        return const Icon(Icons.person, size: 18);
-      case 3: // 专栏
-        return const Icon(Icons.article, size: 18);
-      default:
-        return null;
-    }
   }
 }
