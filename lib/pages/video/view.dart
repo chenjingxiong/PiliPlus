@@ -143,7 +143,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
     // 显示Up主tab的条件：有owner信息且不是禁止显示UP主信息
     return videoDetail.owner != null &&
         videoDetail.owner?.mid != null &&
-        !videoDetail.disableShowUpInfo;
+        videoDetail.disableShowUpInfo != true;
   }
 
   final videoReplyPanelKey = GlobalKey();
