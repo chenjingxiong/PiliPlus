@@ -24,6 +24,8 @@ class _HomePageState extends CommonPageState<HomePage>
     with AutomaticKeepAliveClientMixin {
   final _homeController = Get.putOrFind(HomeController.new);
   final _mainController = Get.find<MainController>();
+  final _searchController = TextEditingController();
+  final _searchFocusNode = FocusNode();
 
   @override
   bool get needsCorrection => _homeController.hideTopBar;
