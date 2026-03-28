@@ -40,10 +40,11 @@ class QuickSearchDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     final controller = Get.find<QuickSearchController>(tag: 'quickSearch');
     final theme = Theme.of(context);
+    final screenWidth = MediaQuery.sizeOf(context).width;
+    final dialogWidth = screenWidth > 600 ? 500.0 : screenWidth * 0.9;
 
     return Container(
-      width: 500,
-      constraints: const BoxConstraints(maxHeight: 500),
+      width: dialogWidth,
       margin: EdgeInsets.only(
         top: MediaQuery.of(context).padding.top + 16,
       ),
@@ -64,7 +65,9 @@ class QuickSearchDialog extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             _buildSearchBar(context, controller, theme),
-            _buildContent(context, controller, theme),
+            Flexible(
+              child: _buildContent(context, controller, theme),
+            ),
           ],
         ),
       ),

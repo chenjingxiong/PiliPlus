@@ -26,6 +26,7 @@ class MineController extends CommonDataController<FavFolderData, FavFolderData>
   AccountService accountService = Get.find<AccountService>();
 
   int? favFolderCount;
+  int? defaultFavId;
 
   // 用户信息 头像、昵称、lv
   final Rx<UserInfoData> userInfo = UserInfoData().obs;
@@ -135,6 +136,10 @@ class MineController extends CommonDataController<FavFolderData, FavFolderData>
   @override
   bool customHandleResponse(bool isRefresh, Success<FavFolderData> response) {
     favFolderCount = response.response.count;
+    // 默认收藏夹通常是第一个
+    if (response.response.list?.isNotEmpty == true) {
+      defaultFavId = response.response.list!.first.id;
+    }
     loadingState.value = response;
     return true;
   }

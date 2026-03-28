@@ -276,36 +276,64 @@ class _MainAppState extends PopScopeState<MainApp>
               ? Obx(
                   () => NavigationBar(
                     maintainBottomViewPadding: true,
-                    onDestinationSelected: _mainController.setIndex,
-                    selectedIndex: _mainController.selectedIndex.value,
-                    destinations: _mainController.navigationBars
-                        .map(
-                          (e) => NavigationDestination(
-                            label: e.label,
-                            icon: _buildIcon(type: e),
-                            selectedIcon: _buildIcon(type: e, selected: true),
-                          ),
-                        )
-                        .toList(),
+                    onDestinationSelected: (index) {
+                      // 搜索按钮
+                      if (index == 0) {
+                        QuickSearchDialog.show();
+                      } else {
+                        _mainController.setIndex(index - 1);
+                      }
+                    },
+                    selectedIndex: _mainController.selectedIndex.value + 1,
+                    destinations: [
+                      // 搜索按钮
+                      NavigationDestination(
+                        label: '搜索',
+                        icon: const Icon(Icons.search_outlined),
+                        selectedIcon: const Icon(Icons.search),
+                      ),
+                      // 原有导航项
+                      ..._mainController.navigationBars.map(
+                        (e) => NavigationDestination(
+                          label: e.label,
+                          icon: _buildIcon(type: e),
+                          selectedIcon: _buildIcon(type: e, selected: true),
+                        ),
+                      ),
+                    ],
                   ),
                 )
               : Obx(
                   () => BottomNavigationBar(
                     currentIndex: _mainController.selectedIndex.value,
-                    onTap: _mainController.setIndex,
+                    onTap: (index) {
+                      // 搜索按钮
+                      if (index == 0) {
+                        QuickSearchDialog.show();
+                      } else {
+                        _mainController.setIndex(index - 1);
+                      }
+                    },
                     iconSize: 16,
                     selectedFontSize: 12,
                     unselectedFontSize: 12,
                     type: .fixed,
-                    items: _mainController.navigationBars
-                        .map(
-                          (e) => BottomNavigationBarItem(
-                            label: e.label,
-                            icon: _buildIcon(type: e),
-                            activeIcon: _buildIcon(type: e, selected: true),
-                          ),
-                        )
-                        .toList(),
+                    items: [
+                      // 搜索按钮
+                      BottomNavigationBarItem(
+                        label: '搜索',
+                        icon: const Icon(Icons.search_outlined),
+                        activeIcon: const Icon(Icons.search),
+                      ),
+                      // 原有导航项
+                      ..._mainController.navigationBars.map(
+                        (e) => BottomNavigationBarItem(
+                          label: e.label,
+                          icon: _buildIcon(type: e),
+                          activeIcon: _buildIcon(type: e, selected: true),
+                        ),
+                      ),
+                    ],
                   ),
                 )
         : null;
