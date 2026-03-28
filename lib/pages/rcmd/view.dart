@@ -28,25 +28,48 @@ class _RcmdPageState extends State<RcmdPage>
   Widget build(BuildContext context) {
     super.build(context);
     final colorScheme = ColorScheme.of(context);
-    return Container(
-      clipBehavior: .hardEdge,
-      margin: const .symmetric(horizontal: Style.safeSpace),
-      decoration: const BoxDecoration(borderRadius: Style.mdRadius),
-      child: refreshIndicator(
-        onRefresh: controller.onRefresh,
-        child: CustomScrollView(
-          controller: controller.scrollController,
-          physics: const AlwaysScrollableScrollPhysics(),
-          slivers: [
-            SliverPadding(
-              padding: const .only(top: Style.cardSpace, bottom: 100),
-              sliver: Obx(
-                () => _buildBody(colorScheme, controller.loadingState.value),
-              ),
+    return Stack(
+      children: [
+        Container(
+          clipBehavior: .hardEdge,
+          margin: const .symmetric(horizontal: Style.safeSpace),
+          decoration: const BoxDecoration(borderRadius: Style.mdRadius),
+          child: refreshIndicator(
+            onRefresh: controller.onRefresh,
+            child: CustomScrollView(
+              controller: controller.scrollController,
+              physics: const AlwaysScrollableScrollPhysics(),
+              slivers: [
+                SliverPadding(
+                  padding: const .only(top: Style.cardSpace, bottom: 100),
+                  sliver: Obx(
+                    () => _buildBody(colorScheme, controller.loadingState.value),
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
-      ),
+        // 右下角刷新按钮
+        Positioned(
+          right: 16,
+          bottom: 16,
+          child: Obx(() {
+            final isLoading = controller.loadingState.value is Loading;
+            return FloatingActionButton.small(
+              heroTag: 'rcmd_refresh',
+              onPressed: isLoading ? null : controller.onRefresh,
+              child: isLoading
+                  ? const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.refresh),
+            );
+          }),
+        ),
+      ],
     );
   }
 
