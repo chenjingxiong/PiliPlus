@@ -10,7 +10,6 @@ import 'package:PiliPlus/common/widgets/route_aware_mixin.dart';
 import 'package:PiliPlus/models/common/nav_bar_config.dart';
 import 'package:PiliPlus/pages/home/view.dart';
 import 'package:PiliPlus/pages/main/controller.dart';
-import 'package:PiliPlus/pages/search/widgets/quick_search_dialog.dart';
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_status.dart';
 import 'package:PiliPlus/utils/app_scheme.dart';
@@ -276,64 +275,36 @@ class _MainAppState extends PopScopeState<MainApp>
               ? Obx(
                   () => NavigationBar(
                     maintainBottomViewPadding: true,
-                    onDestinationSelected: (index) {
-                      // 搜索按钮
-                      if (index == 0) {
-                        QuickSearchDialog.show();
-                      } else {
-                        _mainController.setIndex(index - 1);
-                      }
-                    },
-                    selectedIndex: _mainController.selectedIndex.value + 1,
-                    destinations: [
-                      // 搜索按钮
-                      NavigationDestination(
-                        label: '搜索',
-                        icon: const Icon(Icons.search_outlined),
-                        selectedIcon: const Icon(Icons.search),
-                      ),
-                      // 原有导航项
-                      ..._mainController.navigationBars.map(
-                        (e) => NavigationDestination(
-                          label: e.label,
-                          icon: _buildIcon(type: e),
-                          selectedIcon: _buildIcon(type: e, selected: true),
-                        ),
-                      ),
-                    ],
+                    onDestinationSelected: _mainController.setIndex,
+                    selectedIndex: _mainController.selectedIndex.value,
+                    destinations: _mainController.navigationBars
+                        .map(
+                          (e) => NavigationDestination(
+                            label: e.label,
+                            icon: _buildIcon(type: e),
+                            selectedIcon: _buildIcon(type: e, selected: true),
+                          ),
+                        )
+                        .toList(),
                   ),
                 )
               : Obx(
                   () => BottomNavigationBar(
                     currentIndex: _mainController.selectedIndex.value,
-                    onTap: (index) {
-                      // 搜索按钮
-                      if (index == 0) {
-                        QuickSearchDialog.show();
-                      } else {
-                        _mainController.setIndex(index - 1);
-                      }
-                    },
+                    onTap: _mainController.setIndex,
                     iconSize: 16,
                     selectedFontSize: 12,
                     unselectedFontSize: 12,
                     type: .fixed,
-                    items: [
-                      // 搜索按钮
-                      BottomNavigationBarItem(
-                        label: '搜索',
-                        icon: const Icon(Icons.search_outlined),
-                        activeIcon: const Icon(Icons.search),
-                      ),
-                      // 原有导航项
-                      ..._mainController.navigationBars.map(
-                        (e) => BottomNavigationBarItem(
-                          label: e.label,
-                          icon: _buildIcon(type: e),
-                          activeIcon: _buildIcon(type: e, selected: true),
-                        ),
-                      ),
-                    ],
+                    items: _mainController.navigationBars
+                        .map(
+                          (e) => BottomNavigationBarItem(
+                            label: e.label,
+                            icon: _buildIcon(type: e),
+                            activeIcon: _buildIcon(type: e, selected: true),
+                          ),
+                        )
+                        .toList(),
                   ),
                 )
         : null;
@@ -411,13 +382,7 @@ class _MainAppState extends PopScopeState<MainApp>
                     selectedIndex: _mainController.selectedIndex.value,
                     onDestinationSelected: _mainController.setIndex,
                     labelType: .selected,
-                    leading: Column(
-                      children: [
-                        // 搜索按钮（与导航项同大小）
-                        _buildSearchButton(theme),
-                        const SizedBox(height: 8),
-                      ],
-                    ),
+                    leading: _buildSearchInput(theme),
                     destinations: _mainController.navigationBars
                         .map(
                           (e) => NavigationRailDestination(
@@ -441,24 +406,6 @@ class _MainAppState extends PopScopeState<MainApp>
     final theme = Theme.of(context);
     Widget child;
 
-    // 快捷键监听 - CTRL+F 打开快捷搜索
-    Widget buildWithHotKey(Widget child) {
-      return Focus(
-        autofocus: true,
-        onKeyEvent: (node, event) {
-          // 检测 CTRL+F 或 CMD+F (Mac)
-          if (event is KeyDownEvent &&
-              event.logicalKey == LogicalKeyboardKey.keyF &&
-              (HardwareKeyboard.instance.isControlPressed ||
-                  HardwareKeyboard.instance.isMetaPressed)) {
-            QuickSearchDialog.show();
-            return KeyEventResult.handled;
-          }
-          return KeyEventResult.ignored;
-        },
-        child: child,
-      );
-    }
     if (_mainController.mainTabBarView) {
       child = CustomTabBarView(
         scrollDirection: _mainController.useBottomNav ? .horizontal : .vertical,
@@ -538,28 +485,48 @@ class _MainAppState extends PopScopeState<MainApp>
         : icon;
   }
 
-  Widget _buildSearchButton(ThemeData theme) {
+  Widget _buildSearchInput(ThemeData theme) {
+    final searchController = TextEditingController();
+    final searchFocusNode = FocusNode();
+
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12),
-      child: InkWell(
-        onTap: () => QuickSearchDialog.show(),
-        borderRadius: const BorderRadius.all(Radius.circular(16)),
-        child: Tooltip(
-          message: '搜索 (CTRL+F)',
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                Icons.search_outlined,
-                semanticLabel: '搜索',
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+      child: SizedBox(
+        width: 72,
+        child: TextField(
+          controller: searchController,
+          focusNode: searchFocusNode,
+          textInputAction: TextInputAction.search,
+          decoration: InputDecoration(
+            hintText: '搜索',
+            hintStyle: const TextStyle(fontSize: 12),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 8,
+              vertical: 8,
+            ),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(20),
+              borderSide: BorderSide(
+                color: theme.colorScheme.outline.withValues(alpha: 0.3),
               ),
-              const SizedBox(height: 4),
-              const Text(
-                '搜索',
-                style: TextStyle(fontSize: 12),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(20),
+              borderSide: BorderSide(
+                color: theme.colorScheme.secondary,
+                width: 2,
               ),
-            ],
+            ),
+            isDense: true,
+            prefixIcon: const Icon(Icons.search, size: 16),
           ),
+          style: const TextStyle(fontSize: 12),
+          onSubmitted: (value) {
+            if (value.trim().isNotEmpty) {
+              Get.toNamed('/searchResult', parameters: {'keyword': value.trim()});
+              searchController.clear();
+            }
+          },
         ),
       ),
     );
