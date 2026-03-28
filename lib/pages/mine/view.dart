@@ -14,6 +14,10 @@ import 'package:PiliPlus/pages/login/controller.dart';
 import 'package:PiliPlus/pages/main/controller.dart';
 import 'package:PiliPlus/pages/mine/controller.dart';
 import 'package:PiliPlus/pages/mine/widgets/item.dart';
+import 'package:PiliPlus/pages/mine/widgets/mine_fav_video_list.dart';
+import 'package:PiliPlus/pages/mine/widgets/mine_history_video_list.dart';
+import 'package:PiliPlus/pages/mine/widgets/mine_later_video_list.dart';
+import 'package:PiliPlus/pages/mine/widgets/mine_subscription_video_list.dart';
 import 'package:PiliPlus/utils/extension/get_ext.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
@@ -89,7 +93,15 @@ class _MediaPageState extends CommonPageState<MinePage>
                           ? const SizedBox.shrink()
                           : _buildFav(theme, secondary),
                     ),
-                    _buildQuickLinks(theme, secondary),
+                    // 默认收藏夹视频
+                    if (controller.defaultFavId != null)
+                      MineFavVideoList(favId: controller.defaultFavId!),
+                    // 观看记录
+                    const MineHistoryVideoList(),
+                    // 稍后再看
+                    const MineLaterVideoList(),
+                    // 我的订阅
+                    const MineSubscriptionVideoList(),
                   ],
                 ),
               ),
@@ -568,89 +580,5 @@ class _MediaPageState extends CommonPageState<MinePage>
         ),
       ),
     };
-  }
-
-  Widget _buildQuickLinks(ThemeData theme, Color secondary) {
-    return Column(
-      children: [
-        Divider(
-          height: 20,
-          color: theme.dividerColor.withValues(alpha: 0.1),
-        ),
-        // 快捷入口行
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: Row(
-            children: [
-              Expanded(
-                child: _buildQuickLinkItem(
-                  theme: theme,
-                  icon: Icons.favorite_outline,
-                  label: '默认收藏',
-                  onTap: () => Get.toNamed('/favDetail', parameters: {
-                    'mediaId': controller.defaultFavId?.toString() ?? '0',
-                  }),
-                ),
-              ),
-              Expanded(
-                child: _buildQuickLinkItem(
-                  theme: theme,
-                  icon: Icons.history,
-                  label: '观看记录',
-                  onTap: () => Get.toNamed('/history'),
-                ),
-              ),
-              Expanded(
-                child: _buildQuickLinkItem(
-                  theme: theme,
-                  icon: Icons.watch_later_outlined,
-                  label: '稍后再看',
-                  onTap: () => Get.toNamed('/later?type=0'),
-                ),
-              ),
-              Expanded(
-                child: _buildQuickLinkItem(
-                  theme: theme,
-                  icon: Icons.subscriptions_outlined,
-                  label: '我的订阅',
-                  onTap: () => Get.toNamed('/followDetail'),
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 20),
-      ],
-    );
-  }
-
-  Widget _buildQuickLinkItem({
-    required ThemeData theme,
-    required IconData icon,
-    required String label,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(8),
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        decoration: BoxDecoration(
-          color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 24, color: theme.colorScheme.secondary),
-            const SizedBox(height: 4),
-            Text(
-              label,
-              style: const TextStyle(fontSize: 12),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 }
