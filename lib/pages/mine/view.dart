@@ -14,10 +14,6 @@ import 'package:PiliPlus/pages/login/controller.dart';
 import 'package:PiliPlus/pages/main/controller.dart';
 import 'package:PiliPlus/pages/mine/controller.dart';
 import 'package:PiliPlus/pages/mine/widgets/item.dart';
-import 'package:PiliPlus/pages/mine/widgets/mine_fav_video_list.dart';
-import 'package:PiliPlus/pages/mine/widgets/mine_history_video_list.dart';
-import 'package:PiliPlus/pages/mine/widgets/mine_later_video_list.dart';
-import 'package:PiliPlus/pages/mine/widgets/mine_subscription_video_list.dart';
 import 'package:PiliPlus/utils/extension/get_ext.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
@@ -93,15 +89,6 @@ class _MediaPageState extends CommonPageState<MinePage>
                           ? const SizedBox.shrink()
                           : _buildFav(theme, secondary),
                     ),
-                    // 默认收藏夹视频
-                    if (controller.defaultFavId != null)
-                      MineFavVideoList(favId: controller.defaultFavId!),
-                    // 观看记录
-                    const MineHistoryVideoList(),
-                    // 稍后再看
-                    const MineLaterVideoList(),
-                    // 我的订阅
-                    const MineSubscriptionVideoList(),
                   ],
                 ),
               ),
