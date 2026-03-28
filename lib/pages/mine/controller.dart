@@ -2,10 +2,16 @@ import 'package:PiliPlus/http/fav.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/user.dart';
 import 'package:PiliPlus/models/common/account_type.dart';
+import 'package:PiliPlus/models/common/fav_order_type.dart';
 import 'package:PiliPlus/models/common/theme/theme_type.dart';
 import 'package:PiliPlus/models/user/info.dart';
 import 'package:PiliPlus/models/user/stat.dart';
+import 'package:PiliPlus/models_new/fav/fav_detail/media.dart';
 import 'package:PiliPlus/models_new/fav/fav_folder/data.dart';
+import 'package:PiliPlus/models_new/history/list.dart';
+import 'package:PiliPlus/models_new/later/list.dart';
+import 'package:PiliPlus/models_new/sub/sub/list.dart';
+
 import 'package:PiliPlus/pages/common/common_data_controller.dart';
 import 'package:PiliPlus/services/account_service.dart';
 import 'package:PiliPlus/utils/accounts.dart';
@@ -27,6 +33,12 @@ class MineController extends CommonDataController<FavFolderData, FavFolderData>
 
   int? favFolderCount;
   int? defaultFavId;
+
+  final RxList<FavDetailItemModel> defaultFavVideos =
+      <FavDetailItemModel>[].obs;
+  final RxList<HistoryItemModel> historyVideos = <HistoryItemModel>[].obs;
+  final RxList<LaterItemModel> laterVideos = <LaterItemModel>[].obs;
+  final RxList<SubItemModel> latestSubVideos = <SubItemModel>[].obs;
 
   // 用户信息 头像、昵称、lv
   final Rx<UserInfoData> userInfo = UserInfoData().obs;
@@ -87,7 +99,9 @@ class MineController extends CommonDataController<FavFolderData, FavFolderData>
     UserInfoData? userInfoCache = Pref.userInfoCache;
     if (userInfoCache != null) {
       userInfo.value = userInfoCache;
-      queryData();
+    }
+    if (accountService.isLogin.value) {
+      queryData().then((_) => queryPreviewSections());
       queryUserInfo();
     }
   }
@@ -289,17 +303,92 @@ class MineController extends CommonDataController<FavFolderData, FavFolderData>
     }
   }
 
+  Future<void> queryPreviewSections() async {
+    if (!accountService.isLogin.value) {
+      defaultFavVideos.clear();
+      historyVideos.clear();
+      laterVideos.clear();
+      latestSubVideos.clear();
+      return;
+    }
+    await Future.wait([
+      _queryDefaultFavVideos(),
+      _queryHistoryVideos(),
+      _queryLaterVideos(),
+      _queryLatestSubVideos(),
+    ]);
+  }
+
+  Future<void> _queryDefaultFavVideos() async {
+    final mediaId = defaultFavId;
+    if (mediaId == null) {
+      defaultFavVideos.clear();
+      return;
+    }
+    final res = await FavHttp.userFavFolderDetail(
+      mediaId: mediaId,
+      pn: 1,
+      ps: 10,
+      order: FavOrderType.mtime,
+    );
+    if (res case Success(:final response)) {
+      defaultFavVideos.value = (response.medias ?? [])
+          .where((e) => e.ugc?.firstCid != null && e.bvid?.isNotEmpty == true)
+          .toList();
+    }
+  }
+
+  Future<void> _queryHistoryVideos() async {
+    final res = await UserHttp.historyList(type: 'all');
+    if (res case Success(:final response)) {
+      historyVideos.value = (response.list ?? [])
+          .where(
+            (e) =>
+                e.history.oid != null &&
+                (e.history.business == null ||
+                    e.history.business == 'archive' ||
+                    e.history.business == 'archive-live'),
+          )
+          .take(10)
+          .toList();
+    }
+  }
+
+  Future<void> _queryLaterVideos() async {
+    final res = await UserHttp.seeYouLater(page: 1, viewed: 0);
+    if (res case Success(:final response)) {
+      laterVideos.value = (response.list ?? [])
+          .where((e) => e.aid != null && e.bvid?.isNotEmpty == true)
+          .take(10)
+          .toList();
+    }
+  }
+
+  Future<void> _queryLatestSubVideos() async {
+    final res = await UserHttp.userSubFolder(
+      pn: 1,
+      ps: 20,
+      mid: Accounts.main.mid,
+    );
+    if (res case Success(:final response)) {
+      latestSubVideos.value = (response.list ?? [])
+          .where((e) => e.state != 1 && e.bvid?.isNotEmpty == true)
+          .take(10)
+          .toList();
+    }
+  }
+
   @override
-  Future<void> onRefresh({bool isManual = true}) {
+  Future<void> onRefresh({bool isManual = true}) async {
     if (!accountService.isLogin.value) {
       return Future.syncValue(null);
     }
-    queryUserInfo();
-    return super.onRefresh().whenComplete(() {
-      if (isManual) {
-        scrollController.jumpToTop();
-      }
-    });
+    await queryUserInfo();
+    await super.onRefresh();
+    await queryPreviewSections();
+    if (isManual) {
+      scrollController.jumpToTop();
+    }
   }
 
   @override
@@ -310,6 +399,10 @@ class MineController extends CommonDataController<FavFolderData, FavFolderData>
       userInfo.value = UserInfoData();
       userStat.value = const UserStat();
       loadingState.value = LoadingState.loading();
+      defaultFavVideos.clear();
+      historyVideos.clear();
+      laterVideos.clear();
+      latestSubVideos.clear();
     }
   }
 }

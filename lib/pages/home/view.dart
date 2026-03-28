@@ -32,6 +32,13 @@ class _HomePageState extends CommonPageState<HomePage>
   bool get wantKeepAlive => true;
 
   @override
+  void dispose() {
+    _searchController.dispose();
+    _searchFocusNode.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     super.build(context);
     final theme = Theme.of(context);
@@ -49,7 +56,9 @@ class _HomePageState extends CommonPageState<HomePage>
             width: double.infinity,
             child: TabBar(
               controller: _homeController.tabController,
-              tabs: _homeController.tabs.map((e) => Tab(text: e.label)).toList(),
+              tabs: _homeController.tabs
+                  .map((e) => Tab(text: e.label))
+                  .toList(),
               isScrollable: true,
               dividerColor: Colors.transparent,
               dividerHeight: 0,
@@ -146,57 +155,44 @@ class _HomePageState extends CommonPageState<HomePage>
 
   Widget searchBar(ThemeData theme) {
     const borderRadius = BorderRadius.all(Radius.circular(25));
+    Future<void> submitSearch([String? val]) async {
+      final keyword = (val ?? _searchController.text).trim();
+      if (keyword.isEmpty) {
+        return;
+      }
+      _searchFocusNode.unfocus();
+      Get.toNamed('/searchResult', parameters: {'keyword': keyword});
+    }
+
     return Expanded(
       child: SizedBox(
         height: 44,
         child: Material(
           borderRadius: borderRadius,
           color: theme.colorScheme.onSecondaryContainer.withValues(alpha: 0.05),
-          child: InkWell(
-            borderRadius: borderRadius,
-            splashColor: theme.colorScheme.primaryContainer.withValues(
-              alpha: 0.3,
-            ),
-            onTap: () => Get.toNamed(
-              '/search',
-              parameters: _homeController.enableSearchWord
-                  ? {'hintText': _homeController.defaultSearch.value}
-                  : null,
-            ),
-            child: Row(
-              children: [
-                const SizedBox(width: 14),
-                Icon(
-                  Icons.search_outlined,
-                  color: theme.colorScheme.onSecondaryContainer,
-                  semanticLabel: '搜索',
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Obx(
-                    () => Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            _homeController.defaultSearch.value,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(color: theme.colorScheme.outline),
-                          ),
-                        ),
-                        Text(
-                          ' CTRL+F',
-                          style: TextStyle(
-                            color: theme.colorScheme.outline.withOpacity(0.5),
-                            fontSize: 12,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 5),
-              ],
+          child: TextField(
+            controller: _searchController,
+            focusNode: _searchFocusNode,
+            textInputAction: TextInputAction.search,
+            onSubmitted: submitSearch,
+            decoration: InputDecoration(
+              hintText: _homeController.defaultSearch.value,
+              hintStyle: TextStyle(color: theme.colorScheme.outline),
+              border: InputBorder.none,
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 10,
+              ),
+              prefixIcon: Icon(
+                Icons.search_outlined,
+                color: theme.colorScheme.onSecondaryContainer,
+                semanticLabel: '搜索',
+              ),
+              suffixIcon: IconButton(
+                tooltip: '搜索',
+                onPressed: submitSearch,
+                icon: const Icon(Icons.arrow_forward),
+              ),
             ),
           ),
         ),

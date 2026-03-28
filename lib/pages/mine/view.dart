@@ -6,21 +6,30 @@ import 'package:PiliPlus/common/widgets/flutter/list_tile.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/http/loading_state.dart';
+import 'package:PiliPlus/http/search.dart';
 import 'package:PiliPlus/models/common/nav_bar_config.dart';
+import 'package:PiliPlus/models_new/fav/fav_detail/media.dart';
 import 'package:PiliPlus/models_new/fav/fav_folder/list.dart';
+import 'package:PiliPlus/models_new/history/list.dart';
+import 'package:PiliPlus/models_new/later/list.dart';
+import 'package:PiliPlus/models_new/sub/sub/list.dart';
 import 'package:PiliPlus/pages/common/common_page.dart';
+
 import 'package:PiliPlus/pages/home/view.dart';
 import 'package:PiliPlus/pages/login/controller.dart';
 import 'package:PiliPlus/pages/main/controller.dart';
 import 'package:PiliPlus/pages/mine/controller.dart';
 import 'package:PiliPlus/pages/mine/widgets/item.dart';
 import 'package:PiliPlus/utils/extension/get_ext.dart';
+import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
+
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/material.dart' hide ListTile;
+import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
@@ -88,6 +97,72 @@ class _MediaPageState extends CommonPageState<MinePage>
                       () => controller.loadingState.value is Loading
                           ? const SizedBox.shrink()
                           : _buildFav(theme, secondary),
+                    ),
+                    Obx(
+                      () => _buildPreviewSection<FavDetailItemModel>(
+                        theme: theme,
+                        secondary: secondary,
+                        title: '默认收藏夹的视频',
+                        items: controller.defaultFavVideos,
+                        onMore: () => controller.defaultFavId == null
+                            ? null
+                            : Get.toNamed(
+                                '/favDetail',
+                                parameters: {
+                                  'mediaId': controller.defaultFavId.toString(),
+                                  'heroTag': Utils.generateRandomString(8),
+                                },
+                              )?.whenComplete(_autoRefresh),
+                        cover: (item) => item.cover,
+                        titleText: (item) => item.title,
+                        subtitleText: (item) => item.upper?.name,
+                        onTap: _onTapFavVideo,
+                      ),
+                    ),
+                    Obx(
+                      () => _buildPreviewSection<HistoryItemModel>(
+                        theme: theme,
+                        secondary: secondary,
+                        title: '观看记录',
+                        items: controller.historyVideos,
+                        onMore: () {
+                          Get.toNamed('/history')?.whenComplete(_autoRefresh);
+                        },
+                        cover: (item) => item.cover ?? item.covers?.firstOrNull,
+                        titleText: (item) => item.title,
+                        subtitleText: (item) => item.authorName,
+                        onTap: _onTapHistoryVideo,
+                      ),
+                    ),
+                    Obx(
+                      () => _buildPreviewSection<LaterItemModel>(
+                        theme: theme,
+                        secondary: secondary,
+                        title: '稍后再看',
+                        items: controller.laterVideos,
+                        onMore: () {
+                          Get.toNamed('/later')?.whenComplete(_autoRefresh);
+                        },
+                        cover: (item) => item.pic,
+                        titleText: (item) => item.title,
+                        subtitleText: (item) => item.owner?.name,
+                        onTap: _onTapLaterVideo,
+                      ),
+                    ),
+                    Obx(
+                      () => _buildPreviewSection<SubItemModel>(
+                        theme: theme,
+                        secondary: secondary,
+                        title: '我的最新订阅',
+                        items: controller.latestSubVideos,
+                        onMore: () => Get.toNamed(
+                          '/subscription',
+                        )?.whenComplete(_autoRefresh),
+                        cover: (item) => item.cover,
+                        titleText: (item) => item.title,
+                        subtitleText: (item) => item.upper?.name,
+                        onTap: _onTapSubVideo,
+                      ),
                     ),
                   ],
                 ),
@@ -567,5 +642,182 @@ class _MediaPageState extends CommonPageState<MinePage>
         ),
       ),
     };
+  }
+
+  Widget _buildPreviewSection<T>({
+    required ThemeData theme,
+    required Color secondary,
+    required String title,
+    required List<T> items,
+    required VoidCallback? onMore,
+    required String? Function(T item) cover,
+    required String? Function(T item) titleText,
+    required String? Function(T item) subtitleText,
+    required Future<void> Function(T item) onTap,
+  }) {
+    if (items.isEmpty) {
+      return const SizedBox.shrink();
+    }
+    return Column(
+      children: [
+        Divider(
+          height: 18,
+          color: theme.dividerColor.withValues(alpha: 0.1),
+        ),
+        ListTile(
+          dense: true,
+          onTap: onMore,
+          title: Padding(
+            padding: const EdgeInsets.only(left: 10),
+            child: Text.rich(
+              TextSpan(
+                children: [
+                  TextSpan(
+                    text: '$title  ',
+                    style: TextStyle(
+                      fontSize: theme.textTheme.titleMedium!.fontSize,
+                      fontWeight: .bold,
+                    ),
+                  ),
+                  WidgetSpan(
+                    child: Icon(
+                      Icons.arrow_forward_ios,
+                      size: 18,
+                      color: secondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        SizedBox(
+          height: 196,
+          child: ListView.separated(
+            padding: const .only(left: 20, top: 10, right: 20),
+            scrollDirection: .horizontal,
+            itemCount: items.length,
+            separatorBuilder: (_, _) => const SizedBox(width: 14),
+            itemBuilder: (context, index) {
+              final item = items[index];
+              return GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () => onTap(item),
+                child: SizedBox(
+                  width: 180,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      ClipRRect(
+                        borderRadius: const BorderRadius.all(
+                          Radius.circular(12),
+                        ),
+                        child: NetworkImgLayer(
+                          src: cover(item),
+                          width: 180,
+                          height: 110,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        titleText(item) ?? '-',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      Text(
+                        subtitleText(item) ?? '',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.labelSmall!.copyWith(
+                          color: theme.colorScheme.outline,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _onTapFavVideo(FavDetailItemModel item) async {
+    final cid = item.ugc?.firstCid;
+    final bvid = item.bvid;
+    if (cid == null || bvid?.isNotEmpty != true) {
+      return;
+    }
+    PageUtils.toVideoPage(
+      bvid: bvid,
+      cid: cid,
+      cover: item.cover,
+      title: item.title,
+    );
+  }
+
+  Future<void> _onTapHistoryVideo(HistoryItemModel item) async {
+    final aid = item.history.oid;
+    if (aid == null) {
+      return;
+    }
+    final bvid = item.history.bvid ?? IdUtils.av2bv(aid);
+    final cid =
+        item.history.cid ??
+        await SearchHttp.ab2c(
+          aid: aid,
+          bvid: bvid,
+          part: item.history.page,
+        );
+    if (cid == null) {
+      SmartDialog.showToast('获取视频信息失败');
+      return;
+    }
+    PageUtils.toVideoPage(
+      aid: aid,
+      bvid: bvid,
+      cid: cid,
+      cover: item.cover,
+      title: item.title,
+    );
+  }
+
+  Future<void> _onTapLaterVideo(LaterItemModel item) async {
+    final aid = item.aid;
+    final bvid = item.bvid;
+    if (aid == null || bvid?.isNotEmpty != true) {
+      return;
+    }
+    final cid = item.cid ?? await SearchHttp.ab2c(aid: aid, bvid: bvid);
+    if (cid == null) {
+      SmartDialog.showToast('获取视频信息失败');
+      return;
+    }
+    PageUtils.toVideoPage(
+      aid: aid,
+      bvid: bvid,
+      cid: cid,
+      cover: item.pic,
+      title: item.title,
+    );
+  }
+
+  Future<void> _onTapSubVideo(SubItemModel item) async {
+    final bvid = item.bvid;
+    if (bvid?.isNotEmpty != true) {
+      return;
+    }
+    final cid = await SearchHttp.ab2c(bvid: bvid);
+    if (cid == null) {
+      SmartDialog.showToast('获取视频信息失败');
+      return;
+    }
+    PageUtils.toVideoPage(
+      bvid: bvid,
+      cid: cid,
+      cover: item.cover,
+      title: item.title,
+    );
   }
 }
