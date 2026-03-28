@@ -10,6 +10,8 @@ import 'package:PiliPlus/common/widgets/flutter/pop_scope.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/keep_alive_wrapper.dart';
 import 'package:PiliPlus/common/widgets/route_aware_mixin.dart';
+import 'package:PiliPlus/models/common/image_type.dart';
+import 'package:PiliPlus/models/member/info.dart';
 import 'package:PiliPlus/common/widgets/scroll_physics.dart';
 import 'package:PiliPlus/common/widgets/sliver/sliver_pinned_dynamic_header.dart';
 import 'package:PiliPlus/main.dart';
@@ -2291,9 +2293,159 @@ class _OwnerVideoPanelState extends State<OwnerVideoPanel> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Obx(
-      () => _buildVideoList(_controller.loadingState.value),
+      () => _buildContent(theme, _controller.userState.value),
     );
+  }
+
+  Widget _buildContent(ThemeData theme, LoadingState userState) {
+    return switch (userState) {
+      Loading() => const Center(child: CircularProgressIndicator()),
+      Success(:final response) => Column(
+        children: [
+          _buildUserInfo(theme, response),
+          Expanded(
+            child: Obx(
+              () => _buildVideoList(_controller.loadingState.value),
+            ),
+          ),
+        ],
+      ),
+      Error(:final errMsg) => Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('加载失败: $errMsg'),
+            const SizedBox(height: 16),
+            TextButton(
+              onPressed: () {
+                _controller.userState.value = LoadingState.loading();
+                _controller.getUserInfo();
+              },
+              child: const Text('重试'),
+            ),
+          ],
+        ),
+      ),
+    };
+  }
+
+  Widget _buildUserInfo(ThemeData theme, MemberInfoModel memberInfo) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+        border: Border(
+          bottom: BorderSide(
+            color: theme.colorScheme.outline.withValues(alpha: 0.1),
+          ),
+        ),
+      ),
+      child: Row(
+        children: [
+          // 头像
+          GestureDetector(
+            onTap: () => Get.toNamed('/member?mid=${widget.mid}'),
+            child: Hero(
+              tag: 'avatar_${widget.mid}',
+              child: NetworkImgLayer(
+                type: ImageType.avatar,
+                width: 48,
+                height: 48,
+                src: memberInfo.face,
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          // 用户信息
+          Expanded(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Flexible(
+                      child: GestureDetector(
+                        onTap: () => Get.toNamed('/member?mid=${widget.mid}'),
+                        child: Text(
+                          memberInfo.name ?? '',
+                          style: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Image.asset(
+                      'assets/images/level/${memberInfo.level ?? 0}.png',
+                      height: 11,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Obx(
+                  () => Row(
+                    children: [
+                      _buildStatItem('粉丝', _controller.userStat['follower'] ?? 0),
+                      const SizedBox(width: 12),
+                      _buildStatItem('视频', _controller.count ?? 0),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // 查看主页按钮
+          TextButton.icon(
+            onPressed: () => Get.toNamed('/member?mid=${widget.mid}'),
+            icon: const Icon(Icons.person_outline, size: 16),
+            label: const Text('查看主页'),
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatItem(String label, dynamic value) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        Text(
+          _formatCount(value),
+          style: const TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        const SizedBox(width: 2),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 11,
+            color: Get.theme.colorScheme.onSurface.withValues(alpha: 0.6),
+          ),
+        ),
+      ],
+    );
+  }
+
+  String _formatCount(dynamic count) {
+    if (count is int) {
+      if (count >= 10000) {
+        return '${(count / 10000).toStringAsFixed(1)}万';
+      }
+      return count.toString();
+    }
+    return '0';
   }
 
   Widget _buildVideoList(LoadingState<List<SpaceArchiveItem>?> loadingState) {

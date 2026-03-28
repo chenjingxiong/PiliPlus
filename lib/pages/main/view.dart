@@ -383,7 +383,13 @@ class _MainAppState extends PopScopeState<MainApp>
                     selectedIndex: _mainController.selectedIndex.value,
                     onDestinationSelected: _mainController.setIndex,
                     labelType: .selected,
-                    leading: userAndSearchVertical(theme),
+                    leading: Column(
+                      children: [
+                        // 搜索按钮（与导航项同大小）
+                        _buildSearchButton(theme),
+                        const SizedBox(height: 8),
+                      ],
+                    ),
                     destinations: _mainController.navigationBars
                         .map(
                           (e) => NavigationRailDestination(
@@ -410,6 +416,7 @@ class _MainAppState extends PopScopeState<MainApp>
     // 快捷键监听 - CTRL+F 打开快捷搜索
     Widget buildWithHotKey(Widget child) {
       return Focus(
+        autofocus: true,
         onKeyEvent: (node, event) {
           // 检测 CTRL+F 或 CMD+F (Mac)
           if (event is KeyDownEvent &&
@@ -503,6 +510,33 @@ class _MainAppState extends PopScopeState<MainApp>
         : icon;
   }
 
+  Widget _buildSearchButton(ThemeData theme) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      child: InkWell(
+        onTap: () => QuickSearchDialog.show(),
+        borderRadius: const BorderRadius.all(Radius.circular(16)),
+        child: Tooltip(
+          message: '搜索 (CTRL+F)',
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.search_outlined,
+                semanticLabel: '搜索',
+              ),
+              const SizedBox(height: 4),
+              const Text(
+                '搜索',
+                style: TextStyle(fontSize: 12),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget userAndSearchVertical(ThemeData theme) {
     return Column(
       children: [
@@ -510,12 +544,12 @@ class _MainAppState extends PopScopeState<MainApp>
         const SizedBox(height: 8),
         msgBadge(_mainController),
         IconButton(
-          tooltip: '搜索',
+          tooltip: '搜索 (CTRL+F)',
           icon: const Icon(
             Icons.search_outlined,
             semanticLabel: '搜索',
           ),
-          onPressed: () => Get.toNamed('/search'),
+          onPressed: () => QuickSearchDialog.show(),
         ),
       ],
     );

@@ -39,23 +39,29 @@ class _HomePageState extends CommonPageState<HomePage>
     if (_homeController.tabs.length > 1) {
       tabBar = Padding(
         padding: const EdgeInsets.only(top: 4),
-        child: SizedBox(
-          height: 42,
-          width: double.infinity,
-          child: TabBar(
-            controller: _homeController.tabController,
-            tabs: _homeController.tabs.map((e) => Tab(text: e.label)).toList(),
-            isScrollable: true,
-            dividerColor: Colors.transparent,
-            dividerHeight: 0,
-            splashBorderRadius: Style.mdRadius,
-            tabAlignment: TabAlignment.center,
-            onTap: (_) {
-              feedBack();
-              if (!_homeController.tabController.indexIsChanging) {
-                _homeController.animateToTop();
-              }
-            },
+        child: GestureDetector(
+          onDoubleTap: () {
+            feedBack();
+            _homeController.onRefresh();
+          },
+          child: SizedBox(
+            height: 42,
+            width: double.infinity,
+            child: TabBar(
+              controller: _homeController.tabController,
+              tabs: _homeController.tabs.map((e) => Tab(text: e.label)).toList(),
+              isScrollable: true,
+              dividerColor: Colors.transparent,
+              dividerHeight: 0,
+              splashBorderRadius: Style.mdRadius,
+              tabAlignment: TabAlignment.center,
+              onTap: (_) {
+                feedBack();
+                if (!_homeController.tabController.indexIsChanging) {
+                  _homeController.animateToTop();
+                }
+              },
+            ),
           ),
         ),
       );
