@@ -463,7 +463,7 @@ class _MainAppState extends PopScopeState<MainApp>
       );
     }
 
-    return buildWithHotKey(child);
+    return child;
   }
 
   Widget _buildIcon({required NavigationBarType type, bool selected = false}) {
