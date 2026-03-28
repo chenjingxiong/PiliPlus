@@ -45,8 +45,19 @@ class _MainAppState extends PopScopeState<MainApp>
   late final _setting = GStorage.setting;
   late EdgeInsets _padding;
 
+  // 搜索输入框控制器
+  final searchController = TextEditingController();
+  final searchFocusNode = FocusNode();
+
   @override
   bool get initCanPop => false;
+
+  @override
+  void dispose() {
+    searchController.dispose();
+    searchFocusNode.dispose();
+    super.dispose();
+  }
 
   @override
   void initState() {
@@ -486,9 +497,6 @@ class _MainAppState extends PopScopeState<MainApp>
   }
 
   Widget _buildSearchInput(ThemeData theme) {
-    final searchController = TextEditingController();
-    final searchFocusNode = FocusNode();
-
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
       child: SizedBox(
@@ -519,6 +527,14 @@ class _MainAppState extends PopScopeState<MainApp>
             ),
             isDense: true,
             prefixIcon: const Icon(Icons.search, size: 16),
+            suffixIcon: searchController.text.isNotEmpty
+                ? IconButton(
+                    icon: const Icon(Icons.clear, size: 14),
+                    onPressed: () {
+                      searchController.clear();
+                    },
+                  )
+                : null,
           ),
           style: const TextStyle(fontSize: 12),
           onSubmitted: (value) {
