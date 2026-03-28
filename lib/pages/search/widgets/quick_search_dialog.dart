@@ -151,7 +151,18 @@ class QuickSearchDialog extends StatelessWidget {
         return _buildSuggestionList(context, controller, theme);
       }
 
-      return const SizedBox.shrink();
+      // 没有内容时显示提示
+      return SizedBox(
+        height: 120,
+        child: Center(
+          child: Text(
+            '输入搜索关键词',
+            style: TextStyle(
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+            ),
+          ),
+        ),
+      );
     });
   }
 
@@ -160,9 +171,9 @@ class QuickSearchDialog extends StatelessWidget {
     QuickSearchController controller,
     ThemeData theme,
   ) {
-    return Expanded(
+    return SizedBox(
+      height: 200,
       child: ListView.separated(
-        shrinkWrap: true,
         padding: const EdgeInsets.symmetric(vertical: 8),
         itemCount: controller.historyList.length,
         separatorBuilder: (_, __) => const Divider(height: 1),
@@ -184,9 +195,9 @@ class QuickSearchDialog extends StatelessWidget {
     QuickSearchController controller,
     ThemeData theme,
   ) {
-    return Expanded(
+    return SizedBox(
+      height: 200,
       child: ListView.separated(
-        shrinkWrap: true,
         padding: const EdgeInsets.symmetric(vertical: 8),
         itemCount: controller.searchSuggestList.length,
         separatorBuilder: (_, __) => const Divider(height: 1),
