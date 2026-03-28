@@ -53,13 +53,6 @@ class _MainAppState extends PopScopeState<MainApp>
   bool get initCanPop => false;
 
   @override
-  void dispose() {
-    searchController.dispose();
-    searchFocusNode.dispose();
-    super.dispose();
-  }
-
-  @override
   void initState() {
     super.initState();
     addObserverMobile(this);
@@ -120,6 +113,8 @@ class _MainAppState extends PopScopeState<MainApp>
 
   @override
   void dispose() {
+    searchController.dispose();
+    searchFocusNode.dispose();
     if (PlatformUtils.isDesktop) {
       trayManager.removeListener(this);
       windowManager.removeListener(this);
