@@ -68,7 +68,7 @@ abstract final class SponsorBlock {
 
     if (res.statusCode == 200) {
       if (res.data case final List list) {
-        return Success(list.map((i) => SegmentItemModel.fromJson(i)).toList());
+        return Success(list.map(SegmentItemModel.fromJson).toList());
       }
     }
     return getErrMsg(res);
@@ -164,7 +164,7 @@ abstract final class SponsorBlock {
 
     if (res.statusCode == 200) {
       if (res.data case final List list) {
-        return Success(list.map((i) => SegmentItemModel.fromJson(i)).toList());
+        return Success(list.map(SegmentItemModel.fromJson).toList());
       }
     }
     return getErrMsg(res);

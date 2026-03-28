@@ -88,7 +88,7 @@ class MediaListItemModel extends BaseEpisodeItem {
     likeState = json['like_state'] as int?;
     favState = json['fav_state'] as int?;
     page = json['page'] as int?;
-    pages = (json['pages'] as List?)?.map((e) => Page.fromJson(e)).toList();
+    pages = (json['pages'] as List?)?.map(Page.fromJson).toList();
     title = json['title'] as String?;
     type = json['type'] as int?;
     upper = json['upper'] == null ? null : Owner.fromJson(json['upper']);

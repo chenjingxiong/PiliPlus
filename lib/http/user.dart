@@ -338,9 +338,7 @@ abstract final class UserHttp {
     );
     if (res.data['code'] == 0) {
       return Success(
-        (res.data['data'] as List?)
-            ?.map((e) => VideoTagItem.fromJson(e))
-            .toList(),
+        (res.data['data'] as List?)?.map(VideoTagItem.fromJson).toList(),
       );
     } else {
       return const Error(null);

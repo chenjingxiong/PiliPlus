@@ -510,9 +510,7 @@ abstract final class MemberHttp {
     final res = await Request().get(Api.followUpTag);
     if (res.data['code'] == 0) {
       return Success(
-        (res.data['data'] as List)
-            .map((e) => MemberTagItemModel.fromJson(e))
-            .toList(),
+        (res.data['data'] as List).map(MemberTagItemModel.fromJson).toList(),
       );
     } else {
       return Error(res.data['message']);
@@ -582,7 +580,7 @@ abstract final class MemberHttp {
         FollowData(
           list:
               (res.data['data'] as List?)
-                  ?.map<FollowItemModel>((e) => FollowItemModel.fromJson(e))
+                  ?.map<FollowItemModel>(FollowItemModel.fromJson)
                   .toList() ??
               <FollowItemModel>[],
         ),
@@ -662,7 +660,7 @@ abstract final class MemberHttp {
     if (res.data['code'] == 0) {
       return Success(
         (res.data['data'] as List?)
-            ?.map<MemberTagItemModel>((e) => MemberTagItemModel.fromJson(e))
+            ?.map<MemberTagItemModel>(MemberTagItemModel.fromJson)
             .toList(),
       );
     } else {

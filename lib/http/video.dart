@@ -318,7 +318,7 @@ abstract final class VideoHttp {
     );
     if (res.data['code'] == 0) {
       final items = (res.data['data'] as List?)?.map(
-        (i) => HotVideoItemModel.fromJson(i),
+        HotVideoItemModel.fromJson,
       );
       final list = RecommendFilter.applyFilterToRelatedVideos
           ? items?.where((i) => !RecommendFilter.filterAll(i)).toList()
@@ -920,7 +920,7 @@ abstract final class VideoHttp {
     if (res.data['code'] == 0) {
       return Success(
         (res.data['result']?['list'] as List?)
-            ?.map((e) => PgcRankItemModel.fromJson(e))
+            ?.map(PgcRankItemModel.fromJson)
             .toList(),
       );
     } else {
@@ -943,7 +943,7 @@ abstract final class VideoHttp {
     if (res.data['code'] == 0) {
       return Success(
         (res.data['data']?['list'] as List?)
-            ?.map((e) => PgcRankItemModel.fromJson(e))
+            ?.map(PgcRankItemModel.fromJson)
             .toList(),
       );
     } else {

@@ -11,7 +11,7 @@ class ArticleOpus {
     opussource = json['opus_source'];
     title = json['title'];
     if (json['content']?['paragraphs'] case List list) {
-      content = list.map((i) => ArticleContentModel.fromJson(i)).toList();
+      content = list.map(ArticleContentModel.fromJson).toList();
     }
   }
 }

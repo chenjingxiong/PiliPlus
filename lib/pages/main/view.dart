@@ -347,6 +347,7 @@ class _MainAppState extends PopScopeState<MainApp>
                   children: [
                     const SizedBox(height: 25),
                     userAndSearchVertical(theme),
+                    _buildSearchInput(theme, width: 116),
                     const Spacer(flex: 2),
                     Expanded(
                       flex: 5,
@@ -388,7 +389,7 @@ class _MainAppState extends PopScopeState<MainApp>
                     selectedIndex: _mainController.selectedIndex.value,
                     onDestinationSelected: _mainController.setIndex,
                     labelType: .selected,
-                    leading: _buildSearchInput(theme),
+                    leading: _buildSearchInput(theme, width: 116),
                     destinations: _mainController.navigationBars
                         .map(
                           (e) => NavigationRailDestination(
@@ -491,21 +492,31 @@ class _MainAppState extends PopScopeState<MainApp>
         : icon;
   }
 
-  Widget _buildSearchInput(ThemeData theme) {
+  void _submitSideSearch([String? value]) {
+    final keyword = (value ?? searchController.text).trim();
+    if (keyword.isEmpty) {
+      return;
+    }
+    searchFocusNode.unfocus();
+    Get.toNamed('/searchResult', parameters: {'keyword': keyword});
+  }
+
+  Widget _buildSearchInput(ThemeData theme, {double width = 116}) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
       child: SizedBox(
-        width: 72,
+        width: width,
         child: TextField(
           controller: searchController,
           focusNode: searchFocusNode,
           textInputAction: TextInputAction.search,
+          onSubmitted: _submitSideSearch,
           decoration: InputDecoration(
             hintText: '搜索',
             hintStyle: const TextStyle(fontSize: 12),
             contentPadding: const EdgeInsets.symmetric(
-              horizontal: 8,
-              vertical: 8,
+              horizontal: 10,
+              vertical: 10,
             ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(20),
@@ -517,27 +528,18 @@ class _MainAppState extends PopScopeState<MainApp>
               borderRadius: BorderRadius.circular(20),
               borderSide: BorderSide(
                 color: theme.colorScheme.secondary,
-                width: 2,
+                width: 1.5,
               ),
             ),
             isDense: true,
             prefixIcon: const Icon(Icons.search, size: 16),
-            suffixIcon: searchController.text.isNotEmpty
-                ? IconButton(
-                    icon: const Icon(Icons.clear, size: 14),
-                    onPressed: () {
-                      searchController.clear();
-                    },
-                  )
-                : null,
+            suffixIcon: IconButton(
+              tooltip: '搜索',
+              icon: const Icon(Icons.arrow_forward, size: 14),
+              onPressed: _submitSideSearch,
+            ),
           ),
           style: const TextStyle(fontSize: 12),
-          onSubmitted: (value) {
-            if (value.trim().isNotEmpty) {
-              Get.toNamed('/searchResult', parameters: {'keyword': value.trim()});
-              searchController.clear();
-            }
-          },
         ),
       ),
     );

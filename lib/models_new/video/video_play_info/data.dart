@@ -21,7 +21,7 @@ class PlayInfoData {
         ? null
         : SubtitleInfo.fromJson(json['subtitle'] as Map<String, dynamic>),
     viewPoints: (json['view_points'] as List?)
-        ?.map((e) => ViewPoint.fromJson(e))
+        ?.map(ViewPoint.fromJson)
         .toList(),
     interaction: json["interaction"] == null
         ? null

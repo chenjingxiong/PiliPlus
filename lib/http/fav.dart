@@ -322,7 +322,7 @@ abstract final class FavHttp {
     );
     if (res.data['code'] == 0) {
       List<FavNoteItemModel>? list = (res.data['data']?['list'] as List?)
-          ?.map((e) => FavNoteItemModel.fromJson(e))
+          ?.map(FavNoteItemModel.fromJson)
           .toList();
       return Success(list);
     } else {
@@ -343,7 +343,7 @@ abstract final class FavHttp {
     );
     if (res.data['code'] == 0) {
       List<FavNoteItemModel>? list = (res.data['data']?['list'] as List?)
-          ?.map((e) => FavNoteItemModel.fromJson(e))
+          ?.map(FavNoteItemModel.fromJson)
           .toList();
       return Success(list);
     } else {
@@ -596,9 +596,7 @@ abstract final class FavHttp {
     );
     if (res.data['code'] == 0) {
       return Success(
-        (res.data['data'] as List?)
-            ?.map((e) => SpaceFavData.fromJson(e))
-            .toList(),
+        (res.data['data'] as List?)?.map(SpaceFavData.fromJson).toList(),
       );
     } else {
       return Error(res.data['message']);

@@ -8,7 +8,7 @@ class FollowingsFollowedUpper {
 
   factory FollowingsFollowedUpper.fromJson(Map<String, dynamic> json) =>
       FollowingsFollowedUpper(
-        items: (json['items'] as List?)?.map((e) => Owner.fromJson(e)).toList(),
+        items: (json['items'] as List?)?.map(Owner.fromJson).toList(),
         jumpUrl: json['jump_url'] as String?,
       );
 }

@@ -150,8 +150,6 @@ class ArticleViewData {
         opus: json['opus'] == null
             ? null
             : ArticleOpus.fromJson(json['opus'] as Map<String, dynamic>),
-        ops: (json['ops'] as List?)
-            ?.map((e) => ArticleOps.fromJson(e))
-            .toList(),
+        ops: (json['ops'] as List?)?.map(ArticleOps.fromJson).toList(),
       );
 }

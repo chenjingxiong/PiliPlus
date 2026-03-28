@@ -47,7 +47,7 @@ class _HomePageState extends CommonPageState<HomePage>
     Widget tabBar;
     if (_homeController.tabs.length > 1) {
       tabBar = Padding(
-        padding: const EdgeInsets.only(top: 4),
+        padding: const EdgeInsets.fromLTRB(10, 4, 10, 0),
         child: GestureDetector(
           onDoubleTap: () {
             feedBack();
@@ -56,26 +56,35 @@ class _HomePageState extends CommonPageState<HomePage>
           child: SizedBox(
             height: 42,
             width: double.infinity,
-            child: TabBar(
-              controller: _homeController.tabController,
-              tabs: _homeController.tabs
-                  .map((e) => Tab(text: e.label))
-                  .toList(),
-              isScrollable: true,
-              dividerColor: Colors.transparent,
-              dividerHeight: 0,
-              splashBorderRadius: Style.mdRadius,
-              tabAlignment: TabAlignment.center,
-              onTap: (_) {
-                feedBack();
-                if (!_homeController.tabController.indexIsChanging) {
-                  _homeController.animateToTop();
-                }
-              },
+            child: Row(
+              children: [
+                _topSearchInput(theme),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: TabBar(
+                    controller: _homeController.tabController,
+                    tabs: _homeController.tabs
+                        .map((e) => Tab(text: e.label))
+                        .toList(),
+                    isScrollable: true,
+                    dividerColor: Colors.transparent,
+                    dividerHeight: 0,
+                    splashBorderRadius: Style.mdRadius,
+                    tabAlignment: TabAlignment.start,
+                    onTap: (_) {
+                      feedBack();
+                      if (!_homeController.tabController.indexIsChanging) {
+                        _homeController.animateToTop();
+                      }
+                    },
+                  ),
+                ),
+              ],
             ),
           ),
         ),
       );
+
       if (_homeController.hideTopBar &&
           _mainController.barHideType == .instant) {
         tabBar = Material(
@@ -88,9 +97,6 @@ class _HomePageState extends CommonPageState<HomePage>
     }
     return Column(
       children: [
-        if (!_mainController.useSideBar &&
-            MediaQuery.sizeOf(context).isPortrait)
-          customAppBar(theme),
         tabBar,
         Expanded(
           child: onBuild(
@@ -104,60 +110,10 @@ class _HomePageState extends CommonPageState<HomePage>
     );
   }
 
-  Widget customAppBar(ThemeData theme) {
-    const padding = EdgeInsets.fromLTRB(14, 6, 14, 0);
-    final child = Row(
-      children: [
-        searchBar(theme),
-        const SizedBox(width: 4),
-        msgBadge(_mainController),
-        const SizedBox(width: 8),
-        userAvatar(theme: theme, mainController: _mainController),
-      ],
-    );
-    if (_homeController.hideTopBar) {
-      if (_mainController.barOffset case final barOffset?) {
-        return Obx(
-          () {
-            final offset = barOffset.value;
-            return CustomHeightWidget(
-              offset: Offset(0, -offset),
-              height: Style.topBarHeight - offset,
-              child: Padding(
-                padding: padding,
-                child: child,
-              ),
-            );
-          },
-        );
-      }
-      if (_homeController.showTopBar case final showTopBar?) {
-        return Obx(() {
-          final showSearchBar = showTopBar.value;
-          return AnimatedOpacity(
-            opacity: showSearchBar ? 1 : 0,
-            duration: const Duration(milliseconds: 300),
-            child: AnimatedContainer(
-              curve: Curves.easeInOutCubicEmphasized,
-              duration: const Duration(milliseconds: 500),
-              height: showSearchBar ? Style.topBarHeight : 0,
-              padding: padding,
-              child: child,
-            ),
-          );
-        });
-      }
-    }
-    return Container(
-      height: Style.topBarHeight,
-      padding: padding,
-      child: child,
-    );
-  }
+  Widget _topSearchInput(ThemeData theme) {
+    const borderRadius = BorderRadius.all(Radius.circular(18));
 
-  Widget searchBar(ThemeData theme) {
-    const borderRadius = BorderRadius.all(Radius.circular(25));
-    Future<void> submitSearch([String? val]) async {
+    void submitSearch([String? val]) {
       final keyword = (val ?? _searchController.text).trim();
       if (keyword.isEmpty) {
         return;
@@ -166,35 +122,35 @@ class _HomePageState extends CommonPageState<HomePage>
       Get.toNamed('/searchResult', parameters: {'keyword': keyword});
     }
 
-    return Expanded(
-      child: SizedBox(
-        height: 44,
-        child: Material(
-          borderRadius: borderRadius,
-          color: theme.colorScheme.onSecondaryContainer.withValues(alpha: 0.05),
-          child: TextField(
-            controller: _searchController,
-            focusNode: _searchFocusNode,
-            textInputAction: TextInputAction.search,
-            onSubmitted: submitSearch,
-            decoration: InputDecoration(
-              hintText: _homeController.defaultSearch.value,
-              hintStyle: TextStyle(color: theme.colorScheme.outline),
-              border: InputBorder.none,
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 12,
-                vertical: 10,
-              ),
-              prefixIcon: Icon(
-                Icons.search_outlined,
-                color: theme.colorScheme.onSecondaryContainer,
-                semanticLabel: '搜索',
-              ),
-              suffixIcon: IconButton(
-                tooltip: '搜索',
-                onPressed: submitSearch,
-                icon: const Icon(Icons.arrow_forward),
-              ),
+    return SizedBox(
+      width: 150,
+      height: 36,
+      child: Material(
+        borderRadius: borderRadius,
+        color: theme.colorScheme.onSecondaryContainer.withValues(alpha: 0.06),
+        child: TextField(
+          controller: _searchController,
+          focusNode: _searchFocusNode,
+          textInputAction: TextInputAction.search,
+          onSubmitted: submitSearch,
+          style: const TextStyle(fontSize: 13),
+          decoration: InputDecoration(
+            hintText: '搜索',
+            border: InputBorder.none,
+            isDense: true,
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 8,
+              vertical: 8,
+            ),
+            prefixIcon: Icon(
+              Icons.search_outlined,
+              size: 18,
+              color: theme.colorScheme.onSecondaryContainer,
+            ),
+            suffixIcon: IconButton(
+              tooltip: '搜索',
+              onPressed: submitSearch,
+              icon: const Icon(Icons.arrow_forward, size: 16),
             ),
           ),
         ),

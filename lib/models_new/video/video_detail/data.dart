@@ -175,9 +175,7 @@ class VideoDetailData {
         disableShowUpInfo: json['disable_show_up_info'] as bool?,
         isStoryPlay: json['is_story_play'] as int?,
         isViewSelf: json['is_view_self'] as bool?,
-        staff: (json["staff"] as List?)
-            ?.map((item) => Staff.fromJson(item))
-            .toList(),
+        staff: (json["staff"] as List?)?.map(Staff.fromJson).toList(),
         redirectUrl: noneNullOrEmptyString(json['redirect_url']),
       );
 }

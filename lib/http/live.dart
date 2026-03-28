@@ -141,7 +141,7 @@ abstract final class LiveHttp {
       try {
         return Success(
           (res.data['data']?['room'] as List?)
-              ?.map((e) => DanmakuMsg.fromPrefetch(e))
+              ?.map(DanmakuMsg.fromPrefetch)
               .toList(),
         );
       } catch (e) {
@@ -344,9 +344,7 @@ abstract final class LiveHttp {
     );
     if (res.data['code'] == 0) {
       return Success(
-        (res.data['data']?['list'] as List?)
-            ?.map((e) => AreaList.fromJson(e))
-            .toList(),
+        (res.data['data']?['list'] as List?)?.map(AreaList.fromJson).toList(),
       );
     } else {
       return Error(res.data['message']);
@@ -376,9 +374,7 @@ abstract final class LiveHttp {
 
     if (res.data['code'] == 0) {
       return Success(
-        (res.data['data']?['tags'] as List?)
-                ?.map((e) => AreaItem.fromJson(e))
-                .toList() ??
+        (res.data['data']?['tags'] as List?)?.map(AreaItem.fromJson).toList() ??
             <AreaItem>[],
       );
     } else {
@@ -445,7 +441,7 @@ abstract final class LiveHttp {
     );
     if (res.data['code'] == 0) {
       return Success(
-        (res.data['data'] as List?)?.map((e) => AreaItem.fromJson(e)).toList(),
+        (res.data['data'] as List?)?.map(AreaItem.fromJson).toList(),
       );
     } else {
       return Error(res.data['message']);

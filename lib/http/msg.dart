@@ -126,9 +126,7 @@ abstract final class MsgHttp {
     );
     if (res.data['code'] == 0) {
       return Success(
-        (res.data['data'] as List?)
-            ?.map((e) => MsgSysItem.fromJson(e))
-            .toList(),
+        (res.data['data'] as List?)?.map(MsgSysItem.fromJson).toList(),
       );
     } else {
       return Error(res.data['message']);
@@ -516,9 +514,7 @@ abstract final class MsgHttp {
     );
     if (res.data['code'] == 0) {
       return Success(
-        (res.data['data'] as List?)
-            ?.map((e) => ImUserInfosData.fromJson(e))
-            .toList(),
+        (res.data['data'] as List?)?.map(ImUserInfosData.fromJson).toList(),
       );
     } else {
       return Error(res.data['message']);
@@ -564,7 +560,7 @@ abstract final class MsgHttp {
     if (res.data['code'] == 0) {
       return Success(
         (res.data['data']?['uid_settings'] as List?)
-            ?.map((e) => UidSetting.fromJson(e))
+            ?.map(UidSetting.fromJson)
             .toList(),
       );
     } else {
